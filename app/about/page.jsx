@@ -32,19 +32,19 @@ export default function AboutPage() {
 
   const team = [
     {
-      name: "Dr. Sarah Johnson",
+      name: "Dr. Pramod Biswal",
       role: "Director of Fisheries Development",
       experience: "15+ years in aquaculture research",
       image: "/professional-woman-fisheries-expert.jpg",
     },
     {
-      name: "Michael Chen",
+      name: "Rakesh Biswal",
       role: "Senior Agricultural Advisor",
       experience: "12+ years supporting farmers",
       image: "/professional-man-agricultural-advisor.jpg",
     },
     {
-      name: "Dr. Priya Patel",
+      name: "Soumya Ranjan Praharaj",
       role: "Technical Support Lead",
       experience: "10+ years in fish farming technology",
       image: "/professional-woman-technical-expert.jpg",
