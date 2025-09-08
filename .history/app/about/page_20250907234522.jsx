@@ -1,8 +1,10 @@
-import Navigation from "@/components/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Heart, Shield, Leaf, TrendingUp } from "lucide-react"
-import Link from "next/link"
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Heart, Shield, Leaf, TrendingUp } from "lucide-react";
+import Link from "next/link";
+
 
 export default function AboutPage() {
   const values = [
@@ -58,7 +60,6 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Navigation isLoggedIn={false} />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-teal-600 text-white py-20">
