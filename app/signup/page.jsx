@@ -1,173 +1,366 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AuthLayout } from "@/components/auth-layout"
-import { Eye, EyeOff, User, Mail, Lock, Phone, ArrowRight } from "lucide-react"
+import { User, Phone, Mail, Lock, ArrowRight, ArrowLeft, CheckCircle } from "lucide-react"
+import { initializeApp } from "firebase/app"
+import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth"
+
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+}
+
+const app = initializeApp(firebaseConfig)
+const auth = getAuth(app)
 
 export default function SignUpPage() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    district: "",
-    farmerType: "",
-    password: "",
-    confirmPassword: "",
-    agreeToTerms: false,
-    subscribeUpdates: true,
-  })
-  const [errors, setErrors] = useState({})
+  const [currentStep, setCurrentStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
+  const [errors, setErrors] = useState({})
+  const [recaptchaVerifier, setRecaptchaVerifier] = useState(null)
+  const [confirmationResult, setConfirmationResult] = useState(null)
 
-  const districts = [
-    "Angul",
-    "Balangir",
-    "Balasore",
-    "Bargarh",
-    "Bhadrak",
-    "Boudh",
-    "Cuttack",
-    "Deogarh",
-    "Dhenkanal",
-    "Gajapati",
-    "Ganjam",
-    "Jagatsinghpur",
-    "Jajpur",
-    "Jharsuguda",
-    "Kalahandi",
-    "Kandhamal",
-    "Kendrapara",
-    "Kendujhar",
-    "Khordha",
-    "Koraput",
-    "Malkangiri",
-    "Mayurbhanj",
-    "Nabarangpur",
-    "Nayagarh",
-    "Nuapada",
-    "Puri",
-    "Rayagada",
-    "Sambalpur",
-    "Subarnapur",
-    "Sundargarh",
-  ]
+  // Step 1: Name and Phone
+  const [step1Data, setStep1Data] = useState({
+    fullName: "",
+    phone: "",
+  })
 
-  const farmerTypes = [
-    "New Farmer (Starting fisheries business)",
-    "Small Scale Farmer (< 5 acres)",
-    "Medium Scale Farmer (5-20 acres)",
-    "Large Scale Farmer (> 20 acres)",
-    "Cooperative Society Member",
-    "Fish Processing Business",
-    "Aquaculture Consultant",
-  ]
+  // Step 2: OTP Verification
+  const [otpData, setOtpData] = useState({
+    otp: "",
+  })
 
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
-    }
-  }
+  // Step 3: Email, Password, Profile Picture
+  const [step3Data, setStep3Data] = useState({
+    email: "",
+    password: "",
+    profilePicture: null,
+    profilePreview: "",
+  })
 
-  const validateForm = () => {
-    const newErrors = {}
-
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = "Full name is required"
+  useEffect(() => {
+    // Initialize reCAPTCHA verifier
+    if (typeof window !== "undefined") {
+      const verifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+        size: "invisible",
+        callback: () => {
+          console.log("[v0] reCAPTCHA solved")
+        },
+      })
+      setRecaptchaVerifier(verifier)
     }
 
-    if (!formData.email) {
-      newErrors.email = "Email is required"
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email"
+    return () => {
+      if (recaptchaVerifier) {
+        recaptchaVerifier.clear()
+      }
     }
+  }, [])
 
-    if (!formData.phone) {
-      newErrors.phone = "Phone number is required"
-    } else if (!/^[6-9]\d{9}$/.test(formData.phone)) {
-      newErrors.phone = "Please enter a valid 10-digit phone number"
-    }
-
-    if (!formData.district) {
-      newErrors.district = "Please select your district"
-    }
-
-    if (!formData.farmerType) {
-      newErrors.farmerType = "Please select your farmer type"
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required"
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters"
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password"
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match"
-    }
-
-    if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = "You must agree to the terms and conditions"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = async (e) => {
+  // Step 1: Send OTP using Firebase
+  const handleStep1Submit = async (e) => {
     e.preventDefault()
+    setErrors({})
 
-    if (!validateForm()) return
+    // Validation
+    if (!step1Data.fullName.trim()) {
+      setErrors({ fullName: "Name is required" })
+      return
+    }
+    if (!step1Data.phone || !/^[6-9]\d{9}$/.test(step1Data.phone)) {
+      setErrors({ phone: "Please enter a valid 10-digit phone number" })
+      return
+    }
 
     setIsLoading(true)
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const phoneNumber = `+91${step1Data.phone}`
+
+      if (!recaptchaVerifier) {
+        throw new Error("reCAPTCHA not initialized")
+      }
+
+      const confirmation = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier)
+      setConfirmationResult(confirmation)
+      setCurrentStep(2)
+      console.log("[v0] OTP sent successfully")
+    } catch (error) {
+      console.error("[v0] Error sending OTP:", error)
+      setErrors({ phone: error.message || "Failed to send OTP. Please try again." })
+
+      // Reset reCAPTCHA on error
+      if (recaptchaVerifier) {
+        recaptchaVerifier.clear()
+        const newVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+          size: "invisible",
+          callback: () => {
+            console.log("[v0] reCAPTCHA solved")
+          },
+        })
+        setRecaptchaVerifier(newVerifier)
+      }
+    } finally {
       setIsLoading(false)
-      // Handle successful registration here
-      console.log("Registration successful:", formData)
-    }, 2000)
+    }
+  }
+
+  // Step 2: Verify OTP using Firebase
+  const handleStep2Submit = async (e) => {
+    e.preventDefault()
+    setErrors({})
+
+    if (!otpData.otp || otpData.otp.length !== 6) {
+      setErrors({ otp: "Please enter a valid 6-digit OTP" })
+      return
+    }
+
+    if (!confirmationResult) {
+      setErrors({ otp: "Please request OTP again" })
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const result = await confirmationResult.confirm(otpData.otp)
+      console.log("[v0] Phone verified successfully:", result.user.uid)
+      setCurrentStep(3)
+    } catch (error) {
+      console.error("[v0] Error verifying OTP:", error)
+      setErrors({ otp: "Invalid OTP. Please check and try again." })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Step 3: Complete Registration
+  const handleStep3Submit = async (e) => {
+    e.preventDefault()
+    setErrors({})
+
+    // Validation
+    const newErrors = {}
+    if (!step3Data.email || !/\S+@\S+\.\S+/.test(step3Data.email)) {
+      newErrors.email = "Please enter a valid email"
+    }
+    if (!step3Data.password || step3Data.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters"
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const formData = new FormData()
+      formData.append("fullName", step1Data.fullName)
+      formData.append("phone", `+91${step1Data.phone}`)
+      formData.append("email", step3Data.email)
+      formData.append("password", step3Data.password)
+
+      if (step3Data.profilePicture) {
+        formData.append("profilePicture", step3Data.profilePicture)
+      }
+
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert("Account created successfully! Please sign in.")
+        window.location.href = "/signin"
+      } else {
+        setErrors({ submit: data.error || "Failed to create account" })
+      }
+    } catch (error) {
+      console.error("[v0] Signup error:", error)
+      setErrors({ submit: "Network error. Please try again." })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleProfilePictureChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors({ profilePicture: "File size must be less than 5MB" })
+        return
+      }
+
+      setStep3Data((prev) => ({
+        ...prev,
+        profilePicture: file,
+        profilePreview: URL.createObjectURL(file),
+      }))
+      setErrors((prev) => ({ ...prev, profilePicture: "" }))
+    }
   }
 
   return (
     <AuthLayout
       title="Join Our Community"
       titleOdia="ଆମର ସମୁଦାୟରେ ଯୋଗ ଦିଅନ୍ତୁ"
-      subtitle="Create your account to access government schemes and grow your fisheries business"
+      subtitle={`Step ${currentStep} of 3: ${
+        currentStep === 1 ? "Basic Information" : currentStep === 2 ? "Phone Verification" : "Complete Your Profile"
+      }`}
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Full Name */}
-        <div className="space-y-2">
-          <Label htmlFor="fullName" className="text-sm font-medium">
-            Full Name *
-          </Label>
-          <div className="relative">
-            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="fullName"
-              type="text"
-              placeholder="Enter your full name"
-              value={formData.fullName}
-              onChange={(e) => handleInputChange("fullName", e.target.value)}
-              className={`pl-10 ${errors.fullName ? "border-destructive" : ""}`}
-            />
-          </div>
-          {errors.fullName && <p className="text-sm text-destructive">{errors.fullName}</p>}
-        </div>
+      {/* reCAPTCHA container */}
+      <div id="recaptcha-container"></div>
 
-        {/* Email & Phone Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Progress Indicator */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          {[1, 2, 3].map((step) => (
+            <div key={step} className="flex items-center">
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                  step < currentStep
+                    ? "bg-primary text-primary-foreground"
+                    : step === currentStep
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {step < currentStep ? <CheckCircle className="w-4 h-4" /> : step}
+              </div>
+              {step < 3 && <div className={`w-16 h-1 mx-2 ${step < currentStep ? "bg-primary" : "bg-muted"}`} />}
+            </div>
+          ))}
+        </div>
+        <div className="text-sm text-muted-foreground text-center">
+          {currentStep === 1 && "Enter your name and phone number"}
+          {currentStep === 2 && "Verify your phone with OTP"}
+          {currentStep === 3 && "Complete your profile setup"}
+        </div>
+      </div>
+
+      {/* Step 1: Name and Phone */}
+      {currentStep === 1 && (
+        <form onSubmit={handleStep1Submit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="fullName" className="text-sm font-medium">
+              Full Name *
+            </Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="fullName"
+                type="text"
+                placeholder="Enter your full name"
+                value={step1Data.fullName}
+                onChange={(e) => setStep1Data((prev) => ({ ...prev, fullName: e.target.value }))}
+                className={`pl-10 ${errors.fullName ? "border-destructive" : ""}`}
+              />
+            </div>
+            {errors.fullName && <p className="text-sm text-destructive">{errors.fullName}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone" className="text-sm font-medium">
+              Phone Number *
+            </Label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <div className="absolute left-10 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground">
+                +91
+              </div>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="9876543210"
+                value={step1Data.phone}
+                onChange={(e) => setStep1Data((prev) => ({ ...prev, phone: e.target.value }))}
+                className={`pl-16 ${errors.phone ? "border-destructive" : ""}`}
+              />
+            </div>
+            {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
+            <p className="text-xs text-muted-foreground">We'll send an OTP to verify your phone number</p>
+          </div>
+
+          <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                Sending OTP...
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                Verify Phone
+                <ArrowRight className="h-4 w-4" />
+              </div>
+            )}
+          </Button>
+        </form>
+      )}
+
+      {/* Step 2: OTP Verification */}
+      {currentStep === 2 && (
+        <form onSubmit={handleStep2Submit} className="space-y-6">
+          <div className="text-center mb-6">
+            <p className="text-sm text-muted-foreground">
+              We've sent a 6-digit OTP to <strong>+91{step1Data.phone}</strong>
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="otp" className="text-sm font-medium">
+              Enter OTP *
+            </Label>
+            <Input
+              id="otp"
+              type="text"
+              placeholder="123456"
+              maxLength={6}
+              value={otpData.otp}
+              onChange={(e) => setOtpData((prev) => ({ ...prev, otp: e.target.value.replace(/\D/g, "") }))}
+              className={`text-center text-lg tracking-widest ${errors.otp ? "border-destructive" : ""}`}
+            />
+            {errors.otp && <p className="text-sm text-destructive">{errors.otp}</p>}
+          </div>
+
+          <div className="flex gap-3">
+            <Button type="button" variant="outline" className="flex-1 bg-transparent" onClick={() => setCurrentStep(1)}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+            <Button type="submit" className="flex-1" disabled={isLoading}>
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Verifying...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  Verify OTP
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+              )}
+            </Button>
+          </div>
+        </form>
+      )}
+
+      {/* Step 3: Complete Profile */}
+      {currentStep === 3 && (
+        <form onSubmit={handleStep3Submit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium">
               Email Address *
@@ -178,8 +371,8 @@ export default function SignUpPage() {
                 id="email"
                 type="email"
                 placeholder="your@email.com"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
+                value={step3Data.email}
+                onChange={(e) => setStep3Data((prev) => ({ ...prev, email: e.target.value }))}
                 className={`pl-10 ${errors.email ? "border-destructive" : ""}`}
               />
             </div>
@@ -187,185 +380,93 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone" className="text-sm font-medium">
-              Phone Number *
-            </Label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="9876543210"
-                value={formData.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
-                className={`pl-10 ${errors.phone ? "border-destructive" : ""}`}
-              />
-            </div>
-            {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
-          </div>
-        </div>
-
-        {/* District & Farmer Type Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="district" className="text-sm font-medium">
-              District *
-            </Label>
-            <Select value={formData.district} onValueChange={(value) => handleInputChange("district", value)}>
-              <SelectTrigger className={errors.district ? "border-destructive" : ""}>
-                <SelectValue placeholder="Select your district" />
-              </SelectTrigger>
-              <SelectContent>
-                {districts.map((district) => (
-                  <SelectItem key={district} value={district}>
-                    {district}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.district && <p className="text-sm text-destructive">{errors.district}</p>}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="farmerType" className="text-sm font-medium">
-              Farmer Type *
-            </Label>
-            <Select value={formData.farmerType} onValueChange={(value) => handleInputChange("farmerType", value)}>
-              <SelectTrigger className={errors.farmerType ? "border-destructive" : ""}>
-                <SelectValue placeholder="Select farmer type" />
-              </SelectTrigger>
-              <SelectContent>
-                {farmerTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.farmerType && <p className="text-sm text-destructive">{errors.farmerType}</p>}
-          </div>
-        </div>
-
-        {/* Password Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
             <Label htmlFor="password" className="text-sm font-medium">
-              Password *
+              Set Password *
             </Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Create password"
-                value={formData.password}
-                onChange={(e) => handleInputChange("password", e.target.value)}
-                className={`pl-10 pr-10 ${errors.password ? "border-destructive" : ""}`}
+                type="password"
+                placeholder="Create a strong password"
+                value={step3Data.password}
+                onChange={(e) => setStep3Data((prev) => ({ ...prev, password: e.target.value }))}
+                className={`pl-10 ${errors.password ? "border-destructive" : ""}`}
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
             </div>
             {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-sm font-medium">
-              Confirm Password *
+            <Label htmlFor="profilePicture" className="text-sm font-medium">
+              Profile Picture (Optional)
             </Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm password"
-                value={formData.confirmPassword}
-                onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                className={`pl-10 pr-10 ${errors.confirmPassword ? "border-destructive" : ""}`}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
+            <div className="flex items-center gap-4">
+              {step3Data.profilePreview && (
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-muted">
+                  <img
+                    src={step3Data.profilePreview || "/placeholder.svg"}
+                    alt="Profile preview"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <div className="flex-1">
+                <Input
+                  id="profilePicture"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfilePictureChange}
+                  className={errors.profilePicture ? "border-destructive" : ""}
+                />
+                <p className="text-xs text-muted-foreground mt-1">Max size: 5MB. Supported: JPG, PNG, GIF</p>
+              </div>
             </div>
-            {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
+            {errors.profilePicture && <p className="text-sm text-destructive">{errors.profilePicture}</p>}
           </div>
-        </div>
 
-        {/* Checkboxes */}
-        <div className="space-y-4">
-          <div className="flex items-start space-x-2">
-            <Checkbox
-              id="agreeToTerms"
-              checked={formData.agreeToTerms}
-              onCheckedChange={(checked) => handleInputChange("agreeToTerms", checked)}
-              className={errors.agreeToTerms ? "border-destructive" : ""}
-            />
-            <Label htmlFor="agreeToTerms" className="text-sm text-muted-foreground leading-relaxed">
-              I agree to the{" "}
-              <Link href="/terms" className="text-primary hover:underline">
-                Terms of Service
-              </Link>{" "}
-              and{" "}
-              <Link href="/privacy" className="text-primary hover:underline">
-                Privacy Policy
-              </Link>
-            </Label>
-          </div>
-          {errors.agreeToTerms && <p className="text-sm text-destructive">{errors.agreeToTerms}</p>}
-
-          <div className="flex items-start space-x-2">
-            <Checkbox
-              id="subscribeUpdates"
-              checked={formData.subscribeUpdates}
-              onCheckedChange={(checked) => handleInputChange("subscribeUpdates", checked)}
-            />
-            <Label htmlFor="subscribeUpdates" className="text-sm text-muted-foreground">
-              Send me updates about new schemes and opportunities
-            </Label>
-          </div>
-        </div>
-
-        {/* Submit Button */}
-        <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-          {isLoading ? (
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              Creating Account...
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              Create Account
-              <ArrowRight className="h-4 w-4" />
+          {errors.submit && (
+            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+              <p className="text-sm text-destructive">{errors.submit}</p>
             </div>
           )}
-        </Button>
 
-        {/* Sign In Link */}
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link href="/signin" className="text-primary hover:underline font-medium">
-              Sign in here
-            </Link>
-          </p>
-          <p className="text-xs text-muted-foreground mt-2">
-            <span className="font-semibold text-primary">ଓଡ଼ିଆରେ:</span> ପୂର୍ବରୁ ଖାତା ଅଛି? ଏଠାରେ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ
-          </p>
-        </div>
-      </form>
+          <div className="flex gap-3">
+            <Button type="button" variant="outline" className="flex-1 bg-transparent" onClick={() => setCurrentStep(2)}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+            <Button type="submit" className="flex-1" disabled={isLoading}>
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Creating Account...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  Create Account
+                  <CheckCircle className="h-4 w-4" />
+                </div>
+              )}
+            </Button>
+          </div>
+        </form>
+      )}
+
+      {/* Sign In Link */}
+      <div className="text-center mt-6">
+        <p className="text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <Link href="/signin" className="text-primary hover:underline font-medium">
+            Sign in here
+          </Link>
+        </p>
+      </div>
 
       {/* Trust Badge */}
       <div className="mt-8 p-4 bg-secondary/50 rounded-lg text-center">
         <p className="text-xs text-muted-foreground">
-          🔒 Your information is secure and will only be used to help you access relevant government schemes.
+          🔒 Your information is secure and encrypted. We follow government data protection standards.
         </p>
       </div>
     </AuthLayout>
