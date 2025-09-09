@@ -1,17 +1,42 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { LanguageToggle } from "./language-toggle"
 import { useLanguage } from "@/contexts/language-context"
-import { Menu, X, Fish, Waves } from "lucide-react"
+import { Menu, X, Fish, Waves, User } from "lucide-react"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const { t } = useLanguage()
 
+  useEffect(() => {
+    // Check if user is authenticated by looking for the user_token cookie
+    const checkAuthStatus = () => {
+      const cookies = document.cookie.split(';')
+      const authCookie = cookies.find(cookie => 
+        cookie.trim().startsWith('user_token=')
+      )
+      setIsAuthenticated(!!authCookie)
+    }
+
+    checkAuthStatus()
+    
+    // Also check when the page gains focus
+    window.addEventListener('focus', checkAuthStatus)
+    return () => window.removeEventListener('focus', checkAuthStatus)
+  }, [])
+
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
+
+  const handleSignOut = () => {
+    // Clear the auth token cookie
+    document.cookie = 'user_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'
+    setIsAuthenticated(false)
+    window.location.href = '/'
+  }
 
   return (
     <header className="relative bg-gradient-to-r from-blue-900 via-blue-800 to-teal-900 text-white shadow-2xl overflow-hidden sticky top-0 z-50">
@@ -62,6 +87,16 @@ export function Header() {
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-teal-600 rounded-lg opacity-0 group-hover:opacity-100 transform scale-0 group-hover:scale-100 transition-all duration-300 -z-10"></div>
               <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-teal-400 group-hover:w-full transition-all duration-300"></div>
             </Link>
+            {isAuthenticated && (
+              <Link
+                href="/dashboard"
+                className="relative px-3 py-2 text-sm font-medium text-blue-100 hover:text-white transition-all duration-300 transform hover:scale-110 hover:rotate-1 group"
+              >
+                <span className="relative z-10">Dashboard</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-teal-600 rounded-lg opacity-0 group-hover:opacity-100 transform scale-0 group-hover:scale-100 transition-all duration-300 -z-10"></div>
+                <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-teal-400 group-hover:w-full transition-all duration-300"></div>
+              </Link>
+            )}
             <Link
               href="/about"
               className="relative px-3 py-2 text-sm font-medium text-blue-100 hover:text-white transition-all duration-300 transform hover:scale-110 hover:rotate-1 group"
@@ -83,23 +118,47 @@ export function Header() {
           {/* Right side buttons */}
           <div className="hidden lg:flex items-center space-x-3">
             <LanguageToggle />
-            <Link href="/signin">
-              <Button
-                variant="outline"
-                size="sm"
-                className="!bg-transparent !border-blue-300 !text-blue-100 hover:!bg-blue-800/50 hover:!text-white transform hover:scale-105 transition-all duration-300 bg-transparent"
-              >
-                {t("signIn")}
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button
-                size="sm"
-                className="!bg-gradient-to-r !from-teal-500 !to-blue-600 !text-white !border-0 hover:!from-teal-600 hover:!to-blue-700 transform hover:scale-105 hover:rotate-1 transition-all duration-300 shadow-lg hover:shadow-xl"
-              >
-                {t("getStarted")}
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link href="/dashboard">
+                  <Button
+                    size="sm"
+                    className="!bg-gradient-to-r !from-teal-500 !to-blue-600 !text-white !border-0 hover:!from-teal-600 hover:!to-blue-700 transform hover:scale-105 hover:rotate-1 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2"
+                  >
+                    <User className="h-4 w-4" />
+                    Dashboard
+                  </Button>
+                </Link>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="!bg-transparent !border-blue-300 !text-blue-100 hover:!bg-blue-800/50 hover:!text-white transform hover:scale-105 transition-all duration-300 bg-transparent"
+                >
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link href="/signin">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="!bg-transparent !border-blue-300 !text-blue-100 hover:!bg-blue-800/50 hover:!text-white transform hover:scale-105 transition-all duration-300 bg-transparent"
+                  >
+                    {t("signIn")}
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button
+                    size="sm"
+                    className="!bg-gradient-to-r !from-teal-500 !to-blue-600 !text-white !border-0 hover:!from-teal-600 hover:!to-blue-700 transform hover:scale-105 hover:rotate-1 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  >
+                    {t("getStarted")}
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -133,6 +192,15 @@ export function Header() {
             >
               {t("exploreSchemes")}
             </Link>
+            {isAuthenticated && (
+              <Link
+                href="/dashboard"
+                className="block px-4 py-3 text-blue-100 hover:text-white hover:bg-blue-800/50 rounded-lg transition-all duration-300 transform hover:translate-x-2 hover:scale-105"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Dashboard
+              </Link>
+            )}
             <Link
               href="/about"
               className="block px-4 py-3 text-blue-100 hover:text-white hover:bg-blue-800/50 rounded-lg transition-all duration-300 transform hover:translate-x-2 hover:scale-105"
@@ -150,37 +218,61 @@ export function Header() {
 
             <div className="flex flex-col space-y-3 pt-4 px-4">
               <LanguageToggle />
-              <Link href="/signin" onClick={() => setIsMenuOpen(false)}>
-                <Button
-                  variant="outline"
-                  className="w-full h-12 text-base !bg-transparent !border-blue-300 !text-blue-100 hover:!bg-blue-800/50 hover:!text-white transform hover:scale-105 transition-all duration-300 bg-transparent"
-                >
-                  {t("signIn")}
-                </Button>
-              </Link>
-              <Link href="/signup" onClick={() => setIsMenuOpen(false)}>
-                <Button className="w-full h-12 text-base !bg-gradient-to-r !from-teal-500 !to-blue-600 !text-white !border-0 hover:!from-teal-600 hover:!to-blue-700 transform hover:scale-105 transition-all duration-300">
-                  {t("getStarted")}
-                </Button>
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
+                    <Button className="w-full h-12 text-base !bg-gradient-to-r !from-teal-500 !to-blue-600 !text-white !border-0 hover:!from-teal-600 hover:!to-blue-700 transform hover:scale-105 transition-all duration-300 flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      handleSignOut()
+                      setIsMenuOpen(false)
+                    }}
+                    className="w-full h-12 text-base !bg-transparent !border-blue-300 !text-blue-100 hover:!bg-blue-800/50 hover:!text-white transform hover:scale-105 transition-all duration-300 bg-transparent"
+                  >
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link href="/signin" onClick={() => setIsMenuOpen(false)}>
+                    <Button
+                      variant="outline"
+                      className="w-full h-12 text-base !bg-transparent !border-blue-300 !text-blue-100 hover:!bg-blue-800/50 hover:!text-white transform hover:scale-105 transition-all duration-300 bg-transparent"
+                    >
+                      {t("signIn")}
+                    </Button>
+                  </Link>
+                  <Link href="/signup" onClick={() => setIsMenuOpen(false)}>
+                    <Button className="w-full h-12 text-base !bg-gradient-to-r !from-teal-500 !to-blue-600 !text-white !border-0 hover:!from-teal-600 hover:!to-blue-700 transform hover:scale-105 transition-all duration-300">
+                      {t("getStarted")}
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
         </div>
       </div>
-{/* Floating Particles */}
-<div className="absolute inset-0 pointer-events-none">
-  {[...Array(6)].map((_, i) => (
-    <div
-      key={i}
-      className="absolute w-2 h-2 bg-white/20 rounded-full animate-particle-3d"
-      style={{
-        left: `${Math.random() * 100}%`,             // ✅ string with %
-        animationDuration: `${8 + Math.random() * 4}s`, // ✅ string with s
-        animationDelay: `${Math.random() * 2}s`,     // ✅ string with s
-      }}
-    />
-  ))}
-</div>
-</header>
+
+      {/* Floating Particles */}
+      <div className="absolute inset-0 pointer-events-none">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-2 h-2 bg-white/20 rounded-full animate-particle-3d"
+            style={{
+              left: `${Math.random() * 100}%`,
+              animationDuration: `${8 + Math.random() * 4}s`,
+              animationDelay: `${Math.random() * 2}s`,
+            }}
+          />
+        ))}
+      </div>
+    </header>
   )
 }

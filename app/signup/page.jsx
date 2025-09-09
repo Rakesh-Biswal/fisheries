@@ -134,10 +134,10 @@ export default function SignUpPage() {
 
     try {
       const result = await confirmationResult.confirm(otpData.otp)
-      console.log("[v0] Phone verified successfully:", result.user.uid)
+      console.log(" Phone verified successfully:", result.user.uid)
       setCurrentStep(3)
     } catch (error) {
-      console.error("[v0] Error verifying OTP:", error)
+      console.error(" Error verifying OTP:", error)
       setErrors({ otp: "Invalid OTP. Please check and try again." })
     } finally {
       setIsLoading(false)
@@ -327,7 +327,7 @@ export default function SignUpPage() {
             <Input
               id="otp"
               type="text"
-              placeholder="123456"
+              placeholder=""
               maxLength={6}
               value={otpData.otp}
               onChange={(e) => setOtpData((prev) => ({ ...prev, otp: e.target.value.replace(/\D/g, "") }))}
@@ -379,7 +379,7 @@ export default function SignUpPage() {
             {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
           </div>
 
-          <div className="space-y-2">
+           <div className="space-y-2">
             <Label htmlFor="password" className="text-sm font-medium">
               Set Password *
             </Label>
