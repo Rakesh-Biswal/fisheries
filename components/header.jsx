@@ -100,7 +100,7 @@ export function Header() {
 
           {/* Right side buttons */}
           <div className="hidden lg:flex items-center space-x-3">
-            
+
             {isLoading ? (
               // Loading state
               <div className="w-20 h-9 bg-blue-800/50 rounded-md animate-pulse"></div>
@@ -134,7 +134,7 @@ export function Header() {
                     size="sm"
                     className="bg-transparent border-blue-300 text-blue-100 hover:bg-blue-800/50 hover:text-white transition-colors duration-200"
                   >
-                    {t("signIn")}
+                    {t("signIn as Farmer ")}
                   </Button>
                 </Link>
                 <Link href="/signup">
@@ -161,9 +161,8 @@ export function Header() {
 
         {/* Mobile Navigation */}
         <div
-          className={`lg:hidden transition-all duration-300 overflow-hidden ${
-            isMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-          }`}
+          className={`lg:hidden transition-all duration-300 overflow-hidden ${isMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+            }`}
         >
           <nav className="py-3 space-y-1 border-t border-blue-700/50">
             <Link
@@ -199,7 +198,7 @@ export function Header() {
               <div className="flex justify-center py-2">
                 <LanguageToggle />
               </div>
-              
+
               {isLoading ? (
                 // Loading state
                 <div className="space-y-2">

@@ -1,56 +1,27 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AuthLayout } from "@/components/auth-layout"
-import { Phone, ArrowRight, ArrowLeft } from "lucide-react"
-import { initializeApp } from "firebase/app"
-import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth"
+import { Phone, Lock, ArrowRight } from "lucide-react"
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-}
-
-const app = initializeApp(firebaseConfig)
-const auth = getAuth(app)
+// Dummy user data (in real app, this would be from database)
+const dummyUsers = [
+  { phone: "9876543210", password: "password123", name: "Rahul Kumar", type: "farmer" },
+  { phone: "9123456789", password: "farmer123", name: "Priya Singh", type: "farmer" },
+  { phone: "9988776655", password: "test123", name: "Amit Sharma", type: "farmer" }
+]
 
 export default function SignInPage() {
-  const [isOtpSent, setIsOtpSent] = useState(false)
   const [formData, setFormData] = useState({
     phone: "",
-    otp: "",
+    password: "",
   })
   const [errors, setErrors] = useState({})
   const [isLoading, setIsLoading] = useState(false)
-  const [recaptchaVerifier, setRecaptchaVerifier] = useState(null)
-  const [confirmationResult, setConfirmationResult] = useState(null)
-
-  useEffect(() => {
-    // Initialize reCAPTCHA verifier
-    if (typeof window !== "undefined") {
-      const verifier = new RecaptchaVerifier(auth, "recaptcha-container-signin", {
-        size: "invisible",
-        callback: () => {
-          console.log("reCAPTCHA solved")
-        },
-      })
-      setRecaptchaVerifier(verifier)
-    }
-
-    return () => {
-      if (recaptchaVerifier) {
-        recaptchaVerifier.clear()
-      }
-    }
-  }, [])
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -60,194 +31,134 @@ export default function SignInPage() {
     }
   }
 
-  const validatePhone = () => {
+  const validateForm = () => {
     const newErrors = {}
-    
+
     if (!formData.phone) {
       newErrors.phone = "Phone number is required"
     } else if (!/^[6-9]\d{9}$/.test(formData.phone)) {
       newErrors.phone = "Please enter a valid 10-digit phone number"
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const validateOtp = () => {
-    const newErrors = {}
-    
-    if (!formData.otp || formData.otp.length !== 6) {
-      newErrors.otp = "Please enter a valid 6-digit OTP"
+    if (!formData.password) {
+      newErrors.password = "Password is required"
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters"
     }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSendOtp = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    if (!validatePhone()) return
+
+    if (!validateForm()) return
 
     setIsLoading(true)
 
     try {
-      const phoneNumber = `+91${formData.phone}`
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1500))
 
-      if (!recaptchaVerifier) {
-        throw new Error("reCAPTCHA not initialized")
-      }
+      // Check if user exists in dummy data
+      const user = dummyUsers.find(
+        user => user.phone === formData.phone && user.password === formData.password
+      )
 
-      const confirmation = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier)
-      setConfirmationResult(confirmation)
-      setIsOtpSent(true)
-      console.log("OTP sent successfully")
-    } catch (error) {
-      console.error("Error sending OTP:", error)
-      setErrors({ phone: error.message || "Failed to send OTP. Please try again." })
+      if (user) {
+        // Store user data in localStorage (in real app, use proper auth)
+        localStorage.setItem("currentUser", JSON.stringify(user))
+        console.log("Login successful:", user.name)
 
-      // Reset reCAPTCHA on error
-      if (recaptchaVerifier) {
-        recaptchaVerifier.clear()
-        const newVerifier = new RecaptchaVerifier(auth, "recaptcha-container-signin", {
-          size: "invisible",
-          callback: () => {
-            console.log("reCAPTCHA solved")
-          },
-        })
-        setRecaptchaVerifier(newVerifier)
-      }
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault()
-    
-    if (!validateOtp()) return
-
-    setIsLoading(true)
-
-    try {
-      const result = await confirmationResult.confirm(formData.otp)
-      console.log("Phone verified successfully:", result.user.uid)
-      
-      // Now call our backend API to complete the sign-in
-      const response = await fetch("/api/auth/signin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          phone: `+91${formData.phone}`,
-          firebaseUid: result.user.uid,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        // Redirect to dashboard or home page
+        // Redirect to dashboard
         window.location.href = "/dashboard"
       } else {
-        setErrors({ submit: data.error || "Failed to sign in" })
+        setErrors({ submit: "Invalid phone number or password" })
       }
     } catch (error) {
-      console.error("Error verifying OTP:", error)
-      setErrors({ otp: "Invalid OTP. Please check and try again." })
+      console.error("Login error:", error)
+      setErrors({ submit: "Something went wrong. Please try again." })
     } finally {
       setIsLoading(false)
     }
-  }
-
-  const handleBackToPhone = () => {
-    setIsOtpSent(false)
-    setFormData((prev) => ({ ...prev, otp: "" }))
-    setErrors({})
   }
 
   return (
     <AuthLayout
       title="Welcome Back"
       titleOdia="ସ୍ୱାଗତମ୍"
-      subtitle={isOtpSent ? "Enter the OTP sent to your phone" : "Sign in with your phone number"}
+      subtitle="Sign in to your farmer account"
     >
-      {/* reCAPTCHA container */}
-      <div id="recaptcha-container-signin"></div>
-
-      <form onSubmit={isOtpSent ? handleVerifyOtp : handleSendOtp} className="space-y-6">
-        {!isOtpSent ? (
-          /* Phone Input */
-          <div className="space-y-2">
-            <Label htmlFor="phone" className="text-sm font-medium">
-              Phone Number
-            </Label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="9876543210"
-                value={formData.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value.replace(/\D/g, ""))}
-                className={`pl-10 h-11 ${errors.phone ? "border-destructive" : ""}`}
-                maxLength={10}
-              />
-            </div>
-            {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
-            <p className="text-xs text-muted-foreground">
-              We'll send an OTP to verify your phone number
-            </p>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Phone Input */}
+        <div className="space-y-2">
+          <Label htmlFor="phone" className="text-sm font-medium">
+            Phone Number
+          </Label>
+          <div className="relative">
+            <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="9876543210"
+              value={formData.phone}
+              onChange={(e) => handleInputChange("phone", e.target.value.replace(/\D/g, ""))}
+              className={`pl-10 h-11 ${errors.phone ? "border-destructive" : ""}`}
+              maxLength={10}
+            />
           </div>
-        ) : (
-          /* OTP Input */
-          <>
-            <div className="text-center mb-4">
-              <p className="text-sm text-muted-foreground">
-                OTP sent to <strong>+91{formData.phone}</strong>
-              </p>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="otp" className="text-sm font-medium">
-                Enter OTP
-              </Label>
-              <Input
-                id="otp"
-                type="text"
-                value={formData.otp}
-                onChange={(e) => handleInputChange("otp", e.target.value.replace(/\D/g, ""))}
-                className={`text-center text-lg tracking-widest h-11 ${errors.otp ? "border-destructive" : ""}`}
-                maxLength={6}
-              />
-              {errors.otp && <p className="text-sm text-destructive">{errors.otp}</p>}
-            </div>
+          {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
+        </div>
 
-            <button
-              type="button"
-              onClick={handleBackToPhone}
-              className="text-sm text-primary hover:underline"
-            >
-              ← Change phone number
-            </button>
-          </>
-        )}
+        {/* Password Input */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password" className="text-sm font-medium">
+              Password
+            </Label>
+            <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+              Forgot password?
+            </Link>
+          </div>
+          <div className="relative">
+            <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={(e) => handleInputChange("password", e.target.value)}
+              className={`pl-10 h-11 ${errors.password ? "border-destructive" : ""}`}
+            />
+          </div>
+          {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+        </div>
+
+        {/* Demo Credentials */}
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm font-medium text-blue-800 mb-2">Demo Credentials:</p>
+          <div className="text-xs text-blue-700 space-y-1">
+            <p>Phone: 9876543210 | Password: password123</p>
+            <p>Phone: 9123456789 | Password: farmer123</p>
+            <p>Phone: 9988776655 | Password: test123</p>
+          </div>
+        </div>
 
         {/* Submit Button */}
-        <Button 
-          type="submit" 
-          className="w-full h-11" 
+        <Button
+          type="submit"
+          className="w-full h-11"
           disabled={isLoading}
         >
           {isLoading ? (
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              {isOtpSent ? "Verifying..." : "Sending OTP..."}
+              Signing in...
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              {isOtpSent ? "Verify OTP" : "Send OTP"}
+              Sign In
               <ArrowRight className="h-4 w-4" />
             </div>
           )}
