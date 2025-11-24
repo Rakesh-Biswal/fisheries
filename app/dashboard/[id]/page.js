@@ -426,7 +426,7 @@ export default function DashboardPage() {
               Recent Payments
             </h3>
             <button
-              onClick={() => handleNavigation("/payment-history")}
+              onClick={() => handleNavigation("/payments")}
               className="text-sm text-primary hover:underline"
             >
               View All
