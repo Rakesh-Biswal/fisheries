@@ -500,21 +500,7 @@ export default function SignInPage() {
       </div>
 
       {/* Sign Up Link */}
-      <div className="text-center mt-6">
-        <p className="text-sm text-muted-foreground">
-          Don't have an account?{" "}
-          <Link
-            href="/signup"
-            className="text-primary hover:underline font-medium"
-          >
-            Contact our sales team
-          </Link>
-        </p>
-        <p className="text-xs text-muted-foreground mt-2">
-          <span className="font-semibold text-primary">ଓଡ଼ିଆରେ:</span> ଖାତା
-          ନାହିଁ? ଆମର ବିକ୍ରୟ ଦଳକୁ ଯୋଗାଯୋଗ କରନ୍ତୁ
-        </p>
-      </div>
+      
 
       {/* Trust Badge */}
       <div className="mt-8 p-4 bg-secondary/50 rounded-lg text-center">
