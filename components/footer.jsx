@@ -1,185 +1,224 @@
 "use client"
 
-import { Fish, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram } from "lucide-react"
+import { Heart, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Fish } from "lucide-react"
+import { motion } from "framer-motion"
+import { useState } from "react"
 
 export function Footer() {
+  const currentYear = new Date().getFullYear()
+  const [email, setEmail] = useState("")
+
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault()
+    // Handle newsletter subscription
+    setEmail("")
+  }
+
   return (
-    <footer className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-teal-900 text-white overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 opacity-5">
-        {[...Array(8)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute animate-float-3d-small"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${i * 0.8}s`,
-              transform: `scale(${0.3 + Math.random() * 0.4})`,
-            }}
-          >
-            <Fish className="w-12 h-12 text-white animate-fish-wiggle" />
-          </div>
-        ))}
+    <footer className="relative bg-gradient-to-b from-background to-gray-50 dark:to-gray-900 border-t border-border pt-16 pb-8 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-secondary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
       </div>
 
-      {/* Wave Animation at Top */}
-      <div className="absolute top-0 left-0 w-full h-16 overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-blue-600/30 to-teal-600/30 animate-wave-3d"></div>
-        <div className="absolute top-2 left-0 w-full h-full bg-gradient-to-r from-teal-600/20 to-blue-600/20 animate-wave-3d-reverse"></div>
-      </div>
-
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-          {/* Company Info */}
-          <div className="transform hover:scale-105 transition-all duration-300 hover:translate-z-2">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-teal-400 rounded-full flex items-center justify-center shadow-lg transform hover:rotate-y-12 transition-transform duration-500">
-                <Fish className="w-7 h-7 text-white animate-fish-wiggle" />
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="grid lg:grid-cols-5 gap-10 mb-12">
+          {/* Brand & Description */}
+          <div className="lg:col-span-2">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="relative">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
+                  <Fish className="w-6 h-6 text-white" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                <h2 className="font-bold text-2xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                   Fisheries
-                </h3>
-                <p className="text-sm text-blue-200">Business Solutions</p>
+                </h2>
+                <p className="text-sm text-muted-foreground">Sustainable Aquaculture Solutions</p>
               </div>
             </div>
-            <p className="text-blue-200 mb-4 leading-relaxed">
-              Empowering fisheries businesses with comprehensive government scheme solutions and expert guidance for
-              sustainable growth.
+            
+            <p className="text-muted-foreground mb-6 leading-relaxed">
+              Empowering Indian farmers with modern fish farming techniques, government subsidies, 
+              and end-to-end support for sustainable aquaculture.
             </p>
-            <div className="flex space-x-4">
-              {[Facebook, Twitter, Linkedin, Instagram].map((Icon, index) => (
-                <a
-                  key={index}
-                  href="#"
-                  className="w-10 h-10 bg-blue-800/50 rounded-full flex items-center justify-center hover:bg-blue-700/50 transform hover:scale-110 hover:rotate-12 transition-all duration-300 group"
-                >
-                  <Icon className="w-5 h-5 text-blue-200 group-hover:text-white transition-colors duration-300" />
-                </a>
-              ))}
+            
+            {/* Contact Info */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 text-sm">
+                <Phone className="w-4 h-4 text-primary" />
+                <span className="text-muted-foreground">+91 90406 26617</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <Mail className="w-4 h-4 text-primary" />
+                <span className="text-muted-foreground">support@fisheries.com</span>
+              </div>
+              <div className="flex items-start gap-3 text-sm">
+                <MapPin className="w-4 h-4 text-primary mt-1" />
+                <span className="text-muted-foreground">
+                  Saheed Nagar, Khordha District<br />
+                  Bhubaneswar, Odisha 751021, India
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Quick Links */}
-          <div className="transform hover:translate-z-2 transition-transform duration-300">
-            <h4 className="text-lg font-semibold mb-6 text-white relative">
+          <div>
+            <h4 className="font-semibold text-lg mb-6 text-foreground relative pb-2">
               Quick Links
-              <div className="absolute bottom-0 left-0 w-12 h-0.5 bg-gradient-to-r from-blue-400 to-teal-400 animate-gradient-x"></div>
+              <span className="absolute bottom-0 left-0 w-10 h-0.5 bg-primary" />
             </h4>
-            <ul className="space-y-3">
-              {["Government Schemes", "Eligibility Check", "Application Process", "Success Stories", "Resources"].map(
-                (link, index) => (
-                  <li key={link}>
-                    <a
-                      href="#"
-                      className="text-blue-200 hover:text-white transition-all duration-300 transform hover:translate-x-2 hover:scale-105 inline-block"
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                    >
-                      {link}
-                    </a>
-                  </li>
-                ),
-              )}
-            </ul>
-          </div>
-
-          {/* Services */}
-          <div className="transform hover:translate-z-2 transition-transform duration-300">
-            <h4 className="text-lg font-semibold mb-6 text-white relative">
-              Services
-              <div className="absolute bottom-0 left-0 w-12 h-0.5 bg-gradient-to-r from-teal-400 to-blue-400 animate-gradient-x"></div>
-            </h4>
-            <ul className="space-y-3">
-              {[
-                "Scheme Consultation",
-                "Application Support",
-                "Documentation Help",
-                "Financial Planning",
-                "Business Advisory",
-              ].map((service, index) => (
-                <li key={service}>
-                  <a
-                    href="#"
-                    className="text-blue-200 hover:text-white transition-all duration-300 transform hover:translate-x-2 hover:scale-105 inline-block"
-                    style={{ animationDelay: `${index * 0.1}s` }}
+            <ul className="space-y-4">
+              {["About Us", "Services", "Schemes", "Success Stories", "Contact Us"].map((item, index) => (
+                <motion.li 
+                  key={item}
+                  initial={{ opacity: 0, x: -10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <a 
+                    href="#" 
+                    className="text-muted-foreground hover:text-primary hover:translate-x-2 transition-all duration-300 flex items-center gap-2 group"
                   >
-                    {service}
+                    <span className="w-1 h-1 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {item}
                   </a>
-                </li>
+                </motion.li>
               ))}
             </ul>
           </div>
 
-          {/* Contact Info */}
-          <div className="transform hover:translate-z-2 transition-transform duration-300">
-            <h4 className="text-lg font-semibold mb-6 text-white relative">
-              Contact Us
-              <div className="absolute bottom-0 left-0 w-12 h-0.5 bg-gradient-to-r from-blue-400 to-teal-400 animate-gradient-x"></div>
+          {/* Resources */}
+          <div>
+            <h4 className="font-semibold text-lg mb-6 text-foreground relative pb-2">
+              Resources
+              <span className="absolute bottom-0 left-0 w-10 h-0.5 bg-primary" />
             </h4>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3 group">
-                <div className="w-8 h-8 bg-blue-800/50 rounded-full flex items-center justify-center group-hover:bg-blue-700/50 transform group-hover:scale-110 transition-all duration-300">
-                  <Mail className="w-4 h-4 text-blue-200 group-hover:text-white" />
-                </div>
-                <span className="text-blue-200 group-hover:text-white transition-colors duration-300">
-                  info@fisheries.gov.in
-                </span>
+            <ul className="space-y-4">
+              {["Blog & Articles", "Learning Center", "Research Papers", "Video Tutorials", "FAQ"].map((item, index) => (
+                <motion.li 
+                  key={item}
+                  initial={{ opacity: 0, x: -10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <a 
+                    href="#" 
+                    className="text-muted-foreground hover:text-primary hover:translate-x-2 transition-all duration-300 flex items-center gap-2 group"
+                  >
+                    <span className="w-1 h-1 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {item}
+                  </a>
+                </motion.li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Newsletter */}
+          <div>
+            <h4 className="font-semibold text-lg mb-6 text-foreground relative pb-2">
+              Stay Updated
+              <span className="absolute bottom-0 left-0 w-10 h-0.5 bg-primary" />
+            </h4>
+            <p className="text-muted-foreground text-sm mb-4">
+              Subscribe to get updates on government schemes and farming tips.
+            </p>
+            <form onSubmit={handleNewsletterSubmit} className="space-y-3">
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Your email address"
+                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  required
+                />
               </div>
-              <div className="flex items-center space-x-3 group">
-                <div className="w-8 h-8 bg-blue-800/50 rounded-full flex items-center justify-center group-hover:bg-blue-700/50 transform group-hover:scale-110 transition-all duration-300">
-                  <Phone className="w-4 h-4 text-blue-200 group-hover:text-white" />
-                </div>
-                <span className="text-blue-200 group-hover:text-white transition-colors duration-300">
-                  +91 1800-XXX-XXXX
-                </span>
-              </div>
-              <div className="flex items-center space-x-3 group">
-                <div className="w-8 h-8 bg-blue-800/50 rounded-full flex items-center justify-center group-hover:bg-blue-700/50 transform group-hover:scale-110 transition-all duration-300">
-                  <MapPin className="w-4 h-4 text-blue-200 group-hover:text-white" />
-                </div>
-                <span className="text-blue-200 group-hover:text-white transition-colors duration-300">
-                  New Delhi, India
-                </span>
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 rounded-lg font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:-translate-y-0.5"
+              >
+                Subscribe
+              </button>
+            </form>
+            
+            {/* Social Media */}
+            <div className="mt-8">
+              <p className="text-sm text-muted-foreground mb-4">Follow Us</p>
+              <div className="flex gap-3">
+                {[
+                  { icon: Facebook, label: "Facebook" },
+                  { icon: Twitter, label: "Twitter" },
+                  { icon: Instagram, label: "Instagram" },
+                  { icon: Linkedin, label: "LinkedIn" }
+                ].map((social) => (
+                  <a
+                    key={social.label}
+                    href="#"
+                    className="w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-white hover:bg-primary hover:border-primary transition-all duration-300 hover:scale-110"
+                    aria-label={social.label}
+                  >
+                    <social.icon className="w-5 h-5" />
+                  </a>
+                ))}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-blue-800/50 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-blue-200 text-sm">© 2024 Fisheries Business Solutions. All rights reserved.</p>
-            <div className="flex space-x-6">
-              {["Privacy Policy", "Terms of Service", "Cookie Policy"].map((link, index) => (
+        {/* Divider */}
+        <div className="border-t border-border pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            {/* Copyright */}
+            <div className="text-center md:text-left">
+              <p className="text-muted-foreground text-sm">
+                © {currentYear} <span className="font-medium text-foreground">Fisheries</span>. 
+                A Digadarshan Group Initiative. All rights reserved.
+              </p>
+              
+            </div>
+
+            {/* Legal Links */}
+            <div className="flex flex-wrap gap-6 justify-center">
+              {["Privacy Policy", "Terms of Service", "Cookie Policy", "Disclaimer"].map((item) => (
                 <a
-                  key={link}
+                  key={item}
                   href="#"
-                  className="text-blue-200 hover:text-white text-sm transition-all duration-300 transform hover:scale-105"
-                  style={{ animationDelay: `${index * 0.1}s` }}
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  {link}
+                  {item}
                 </a>
               ))}
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Floating Bubbles */}
-      <div className="absolute inset-0 pointer-events-none">
-        {[...Array(12)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-white/30 rounded-full animate-bubble-trail"
-            style={{
-              left: `${Math.random() * 100}%`,
-              bottom: "0px",
-              animationDuration: `${4 + Math.random() * 3}s`,
-              animationDelay: `${Math.random() * 2}s`,
-            }}
-          />
-        ))}
+            {/* Made with love */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>Empowering Indian Farmers</span>
+              <Heart className="w-4 h-4 text-red-500 fill-red-500 animate-pulse" />
+            </div>
+          </div>
+
+          {/* Accreditation */}
+          
+        </div>
+
+        {/* Back to Top */}
+        <motion.button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary text-white shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center z-50"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          ↑
+        </motion.button>
       </div>
     </footer>
   )

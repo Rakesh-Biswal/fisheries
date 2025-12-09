@@ -28,7 +28,7 @@ export function AuthLayout({ title, titleOdia, subtitle, children }) {
         <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-blue-500">
           <div className="flex items-center justify-center h-full">
             <div className="text-center text-white p-8">
-              <h2 className="text-4xl font-bold mb-4">Krishi Mitra</h2>
+              <h2 className="text-4xl font-bold mb-4">Fisheries</h2>
               <p className="text-xl opacity-90">Your Digital Farming Companion</p>
               <div className="mt-8 text-sm opacity-75">
                 <p>Empowering Farmers with Technology</p>

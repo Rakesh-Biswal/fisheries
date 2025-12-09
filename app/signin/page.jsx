@@ -502,12 +502,7 @@ export default function SignInPage() {
       {/* Sign Up Link */}
       
 
-      {/* Trust Badge */}
-      <div className="mt-8 p-4 bg-secondary/50 rounded-lg text-center">
-        <p className="text-xs text-muted-foreground">
-          🔒 Secure OTP verification. Your data is protected.
-        </p>
-      </div>
+      
 
       {/* Invisible reCAPTCHA container */}
       <div id="recaptcha-container" className="hidden" />

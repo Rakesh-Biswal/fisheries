@@ -1,239 +1,306 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { ArrowRight, Users, FileText, TrendingUp, Shield, Fish, Waves, Anchor } from "lucide-react"
-import Link from "next/link"
+import { ArrowRight, Droplet, Users, IndianRupee, TrendingUp, MessageCircle } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { motion } from "framer-motion"
+
+function Counter({ end, duration = 2, suffix = "", prefix = "" }) {
+  const [count, setCount] = useState(0)
+  const countRef = useRef(0)
+  const [isVisible, setIsVisible] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (ref.current) {
+      observer.observe(ref.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!isVisible) return
+
+    let startTime = null
+    const step = (timestamp) => {
+      if (!startTime) startTime = timestamp
+      const progress = Math.min((timestamp - startTime) / (duration * 1000), 1)
+
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4)
+      const currentCount = Math.floor(easeOutQuart * end)
+
+      if (countRef.current !== currentCount) {
+        countRef.current = currentCount
+        setCount(currentCount)
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(step)
+      } else {
+        setCount(end)
+      }
+    }
+
+    requestAnimationFrame(step)
+  }, [isVisible, end, duration])
+
+  return (
+    <div ref={ref}>
+      <p className="text-3xl font-bold text-primary">
+        {prefix}{count.toLocaleString()}{suffix}
+      </p>
+    </div>
+  )
+}
+
+function TypingAnimation({ text, delay = 0, speed = 50 }) {
+  const [displayedText, setDisplayedText] = useState("")
+  const [isVisible, setIsVisible] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (ref.current) {
+      observer.observe(ref.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!isVisible) return
+
+    let currentIndex = 0
+    const timer = setTimeout(() => {
+      const interval = setInterval(() => {
+        if (currentIndex <= text.length) {
+          setDisplayedText(text.substring(0, currentIndex))
+          currentIndex++
+        } else {
+          clearInterval(interval)
+        }
+      }, speed)
+
+      return () => clearInterval(interval)
+    }, delay)
+
+    return () => clearTimeout(timer)
+  }, [isVisible, text, delay, speed])
+
+  return (
+    <span ref={ref}>
+      {displayedText}
+      <span className="animate-pulse">|</span>
+    </span>
+  )
+}
 
 export function HeroSection() {
+  const stats = [
+    { icon: Users, value: 500, suffix: "+", label: "Farmers Empowered", delay: 0.2 },
+    { icon: IndianRupee, value: 50, suffix: "Cr+", label: "Funds Disbursed", delay: 0.4 },
+    { icon: TrendingUp, value: 98, suffix: "%", label: "Success Rate", delay: 0.6 },
+  ]
+
+  const handleWhatsAppClick = () => {
+    const phoneNumber = "+919040626617"
+    const message = encodeURIComponent(
+      "Hello Fisheries Team,\n\nI'm interested in starting a fish farming business. I've seen your 6-step process and would like to:\n1. Schedule a free consultation\n2. Learn about government subsidies\n3. Understand the documentation required\n4. Get more details about the buyback guarantee\n\nPlease contact me to discuss further.\nThank you!"
+    )
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`
+    window.open(whatsappUrl, '_blank')
+  }
+
   return (
-    <section className="relative py-20 lg:py-32 bg-gradient-to-br from-blue-50 via-secondary/30 to-background overflow-hidden">
-      {/* Enhanced 3D River Background */}
-      <div className="absolute inset-0 overflow-hidden z-0">
-        {/* River base with 3D depth */}
-        <div className="absolute bottom-0 left-0 w-full h-2/3 bg-gradient-to-t from-blue-400/30 via-blue-300/20 to-transparent transform-gpu perspective-1000">
-          {/* Multiple water layers for depth */}
-          <div className="absolute bottom-0 w-full h-full bg-gradient-to-t from-blue-500/20 to-transparent animate-river-flow"></div>
-          <div className="absolute bottom-0 w-full h-3/4 bg-gradient-to-t from-cyan-400/15 to-transparent animate-river-flow-slow"></div>
-
-          {/* Animated water waves with 3D effect */}
-          <div className="absolute bottom-0 left-0 w-[300%] h-32 bg-wave-pattern bg-[length:200px_60px] animate-wave-3d opacity-60"></div>
-          <div className="absolute bottom-4 left-0 w-[250%] h-24 bg-wave-pattern bg-[length:150px_40px] animate-wave-3d-reverse opacity-40"></div>
-          <div className="absolute bottom-8 left-0 w-[200%] h-16 bg-wave-pattern bg-[length:100px_30px] animate-wave-3d opacity-30"></div>
-
-          {/* Water ripples */}
-          {[...Array(8)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute rounded-full border-2 border-blue-300/20 animate-ripple"
-              style={{
-                width: `${40 + i * 20}px`,
-                height: `${40 + i * 20}px`,
-                left: `${10 + i * 12}%`,
-                bottom: `${20 + Math.sin(i) * 10}%`,
-                animationDelay: `${i * 1.5}s`,
-                animationDuration: `${4 + i * 0.5}s`,
-              }}
-            ></div>
-          ))}
-        </div>
-
-        {/* Enhanced floating elements with 3D transforms */}
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-primary/10 rounded-full filter blur-3xl animate-float-3d-large"></div>
-        <div className="absolute top-1/2 -right-40 w-96 h-96 bg-blue-300/10 rounded-full filter blur-3xl animate-float-3d-medium"></div>
-        <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-green-300/10 rounded-full filter blur-3xl animate-float-3d-small"></div>
+    <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
-      {/* Enhanced 3D Swimming Fish Animation */}
-      <div className="absolute inset-0 overflow-hidden z-5">
-        {[...Array(12)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute animate-fish-swim-3d transform-gpu"
-            style={{
-              left: `${-10 + (i % 4) * 30}%`,
-              top: `${30 + (i % 3) * 20}%`,
-              animationDelay: `${i * 3}s`,
-              animationDuration: `${25 + (i % 5) * 10}s`,
-              transform: `rotateY(${i % 2 === 0 ? "0deg" : "180deg"}) rotateX(${Math.sin(i) * 15}deg)`,
-            }}
+      <div className="max-w-6xl mx-auto w-full relative z-10">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          {/* Left Content */}
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="space-y-8"
           >
-            <Fish
-              className={`w-8 h-6 text-blue-500/40 transform transition-all duration-1000 hover:scale-150 hover:text-blue-600/60 ${
-                i % 3 === 0 ? "animate-fish-wiggle" : i % 3 === 1 ? "animate-fish-dive" : "animate-fish-surface"
-              }`}
-              style={{
-                filter: `hue-rotate(${i * 30}deg) brightness(${0.8 + (i % 3) * 0.2})`,
-              }}
-            />
-            {/* Fish bubble trail */}
-            <div className="absolute -right-2 top-1 w-1 h-1 bg-blue-200/60 rounded-full animate-bubble-trail"></div>
-            <div className="absolute -right-4 top-0 w-0.5 h-0.5 bg-blue-100/40 rounded-full animate-bubble-trail-delayed"></div>
-          </div>
-        ))}
+            {/* Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full border border-primary/20 backdrop-blur-sm"
+            >
+              <Droplet size={16} className="text-primary animate-bounce" />
+              <span className="text-sm font-medium text-primary">
+                Transforming Fish Farming in India
+              </span>
+            </motion.div>
 
-        {/* Large fish swimming across */}
-        {[...Array(3)].map((_, i) => (
-          <div
-            key={`large-${i}`}
-            className="absolute animate-large-fish-swim transform-gpu"
-            style={{
-              left: "-15%",
-              top: `${40 + i * 15}%`,
-              animationDelay: `${i * 15}s`,
-              animationDuration: "45s",
-            }}
-          >
-            <Fish className="w-16 h-12 text-blue-600/30 transform rotate-45 animate-fish-wiggle-large" />
-            <div className="absolute -right-3 top-2 w-2 h-2 bg-blue-300/40 rounded-full animate-bubble-large"></div>
-          </div>
-        ))}
-      </div>
+            {/* Title with Typing Animation */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight min-h-[8rem]">
+              Start Your{" "}
+              <span className="text-primary">
+                <TypingAnimation text="Fish Farming" delay={800} />
+              </span>{" "}
+              <TypingAnimation text="Journey Today" delay={1200} />
+            </h1>
 
-      {/* Underwater light rays */}
-      <div className="absolute inset-0 overflow-hidden z-1">
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute bg-gradient-to-b from-yellow-200/10 to-transparent animate-light-ray transform-gpu"
-            style={{
-              width: "4px",
-              height: "100%",
-              left: `${15 + i * 15}%`,
-              top: "0",
-              animationDelay: `${i * 2}s`,
-              animationDuration: `${8 + i * 2}s`,
-              transform: `skewX(${10 + Math.sin(i) * 5}deg)`,
-            }}
-          ></div>
-        ))}
-      </div>
+            {/* Description */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 1.5 }}
+              className="text-lg text-muted-foreground leading-relaxed"
+            >
+              Fisheries is your complete platform for fish farming success. Get government subsidies, expert guidance,
+              seed funding, and guaranteed market access. We buy your fish and ensure your profit.
+            </motion.p>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Content with enhanced 3D effects */}
-          <div className="space-y-8 relative transform-gpu">
-            {/* Enhanced decorative elements */}
-            <div className="absolute -top-6 -left-6 w-16 h-16 bg-primary/10 rounded-full filter blur-xl animate-float-3d-ping"></div>
-            <div className="absolute bottom-10 -right-6 w-12 h-12 bg-blue-300/10 rounded-full filter blur-lg animate-pulse-3d"></div>
+            {/* Single Large Contact Now Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 2 }}
+              className="pt-4"
+            >
+              <motion.button
+                onClick={handleWhatsAppClick}
+                whileHover={{ scale: 1.05, y: -3 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 
+                  text-white rounded-full px-10 py-7 text-lg font-semibold shadow-2xl hover:shadow-3xl 
+                  transition-all duration-300 flex items-center justify-center gap-3 group"
+              >
+                <MessageCircle className="w-6 h-6" />
+                <span className="text-xl">Contact Now on WhatsApp</span>
+                <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
+              </motion.button>
+              
+              {/* Helper Text */}
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 2.2 }}
+                className="text-center sm:text-left text-sm text-muted-foreground mt-4 flex items-center justify-center sm:justify-start gap-2"
+              >
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                Get instant response from our experts
+              </motion.p>
+            </motion.div>
 
-            <div className="space-y-4 relative transform-gpu perspective-1000">
-              <div className="absolute -left-8 top-4 w-6 h-6 bg-primary rounded-full opacity-20 animate-pulse-3d"></div>
-              <h1 className="text-4xl lg:text-6xl font-bold text-balance leading-tight transform transition-all duration-700 hover:translate-x-2 hover:rotateY-5 transform-gpu">
-                Your Complete
-                <span className="text-primary bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent relative transform-gpu">
-                  <Waves className="absolute -top-4 -left-6 w-8 h-8 text-blue-300/50 animate-wave-bob-3d" />
-                  Fisheries Business
-                  <Anchor className="absolute -bottom-4 -right-6 w-6 h-6 text-blue-400/60 animate-anchor-sway" />
-                </span>
-                Solution
-              </h1>
-              <p className="text-xl text-muted-foreground text-pretty leading-relaxed transform transition-all duration-700 hover:translate-x-1 hover:translate-z-4 transform-gpu">
-                Navigate government schemes, manage your fisheries business, and grow with confidence. We handle the
-                paperwork, you focus on success.
-              </p>
-              <p className="text-lg text-muted-foreground transform transition-all duration-700 hover:translate-x-1 transform-gpu">
-                <span className="font-semibold text-primary">ଓଡ଼ିଆରେ:</span> ସରକାରୀ ଯୋଜନା, ବ୍ୟବସାୟ ପରିଚାଳନା ଏବଂ ସଫଳତା ପାଇଁ ଆମର
-                ସମ୍ପୂର୍ଣ୍ଣ ସମାଧାନ
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 relative transform-gpu">
-              <div className="absolute -bottom-4 -right-4 w-8 h-8 bg-primary/10 rounded-full filter blur-lg animate-pulse-3d"></div>
-              <Link href="/explore" className="group">
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto transform transition-all duration-500 hover:scale-105 hover:shadow-xl hover:translate-z-8 !bg-gradient-to-r !from-primary !to-blue-600 shadow-lg shadow-blue-500/30 transform-gpu !text-white hover:!text-white !border-0"
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-6 pt-8">
+              {stats.map((stat, index) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: stat.delay + 2 }}
+                  className="text-center p-4 rounded-xl bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-colors duration-300"
                 >
-                  Explore Schemes
-                  <ArrowRight className="ml-2 h-5 w-5 transform transition-transform duration-500 group-hover:translate-x-1 group-hover:rotateZ-12" />
-                </Button>
-              </Link>
-              <Link href="/signup" className="group">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full sm:w-auto transform transition-all duration-500 hover:scale-105 hover:translate-z-4 border-2 border-primary/50 hover:border-primary hover:bg-primary/5 transform-gpu bg-transparent"
-                >
-                  Start Your Journey
-                </Button>
-              </Link>
-            </div>
-
-            {/* Enhanced Trust Indicators */}
-            <div className="flex items-center gap-6 pt-4">
-              {[
-                { value: "500+", label: "Farmers Helped" },
-                { value: "₹2Cr+", label: "Subsidies Secured" },
-                { value: "50+", label: "Active Schemes" },
-              ].map((item, index) => (
-                <div
-                  key={index}
-                  className="text-center transform transition-all duration-500 hover:scale-110 hover:translate-z-6 group transform-gpu perspective-500"
-                >
-                  <div className="text-2xl font-bold text-primary bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent relative">
-                    {item.value}
-                    <div className="absolute -top-1 -right-2 w-2 h-2 bg-green-400 rounded-full group-hover:animate-ping-3d"></div>
+                  <div className="flex justify-center mb-2">
+                    <stat.icon className="w-6 h-6 text-primary" />
                   </div>
-                  <div className="text-sm text-muted-foreground">{item.label}</div>
-                </div>
+                  <Counter end={stat.value} suffix={stat.suffix} duration={1.5} />
+                  <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
-          {/* Right Content - Enhanced Feature Cards with advanced 3D effects */}
-          <div className="grid grid-cols-2 gap-4 perspective-1000 transform-gpu">
-            {[
-              { icon: FileText, title: "Scheme Management", desc: "Complete application and documentation support" },
-              { icon: TrendingUp, title: "Business Growth", desc: "Strategic guidance for sustainable expansion" },
-              { icon: Shield, title: "Compliance Support", desc: "Stay compliant with all regulations" },
-              { icon: Users, title: "Expert Guidance", desc: "24/7 support from industry experts" },
-            ].map((item, index) => (
-              <Card
-                key={index}
-                className="hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:translate-z-8 hover:rotateX-5 hover:rotateY-5 transform bg-white/90 backdrop-blur-md border border-white/20 relative overflow-hidden group transform-gpu"
-                style={{
-                  transformStyle: "preserve-3d",
-                  animationDelay: `${index * 100}ms`,
-                }}
+          {/* Right Image */}
+          <motion.div
+            initial={{ opacity: 0, x: 50, rotateY: 10 }}
+            animate={{ opacity: 1, x: 0, rotateY: 0 }}
+            transition={{ duration: 1, delay: 0.5 }}
+            className="relative"
+          >
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl group">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 mix-blend-overlay" />
+              <img
+                src="https://www.dailyexcelsior.com/wp-content/uploads/2025/06/fish.jpg"
+                alt="Fish farming"
+                className="w-full h-[500px] object-cover transform group-hover:scale-105 transition-transform duration-700"
+              />
+
+              {/* Floating elements */}
+              <motion.div
+                animate={{ y: [0, -20, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-6 right-6 bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="absolute -right-4 -top-4 w-20 h-20 bg-primary/5 rounded-full group-hover:scale-150 transition-transform duration-700 transform-gpu"></div>
+                <p className="text-sm font-semibold text-foreground">Guaranteed Profit</p>
+                <p className="text-2xl font-bold text-primary">₹2L+/Month</p>
+              </motion.div>
 
-                <CardContent className="p-6 text-center relative z-10">
-                  <div className="relative inline-block transform-gpu">
-                    <item.icon className="h-12 w-12 text-primary mx-auto mb-4 transform transition-all duration-700 group-hover:scale-110 group-hover:rotateY-180 group-hover:translate-z-4 transform-gpu" />
-                    <div className="absolute inset-0 bg-primary/10 rounded-full scale-150 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  </div>
-                  <h3 className="font-semibold mb-2 text-foreground/90 transform transition-all duration-500 group-hover:translate-z-2">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground transform transition-all duration-500 group-hover:translate-z-1">
-                    {item.desc}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+              <motion.div
+                animate={{ y: [0, 20, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg"
+              >
+                <p className="text-sm font-semibold text-foreground">Market Access</p>
+                <p className="text-lg font-bold text-primary">100% Assured</p>
+              </motion.div>
+
+              {/* Contact Badge */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 2, type: "spring" }}
+                className="absolute top-6 left-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full px-4 py-2 shadow-lg flex items-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span className="text-sm font-medium">Contact via WhatsApp</span>
+              </motion.div>
+            </div>
+
+            {/* Decorative elements */}
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="absolute -top-4 -right-4 w-32 h-32 border-4 border-primary/20 rounded-full"
+            />
+            <motion.div
+              animate={{ rotate: -360 }}
+              transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+              className="absolute -bottom-4 -left-4 w-24 h-24 border-4 border-secondary/20 rounded-full"
+            />
+          </motion.div>
         </div>
-      </div>
 
-      {/* Enhanced floating particles with 3D depth */}
-      <div className="absolute inset-0 overflow-hidden z-0">
-        {[...Array(30)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full animate-particle-3d transform-gpu"
-            style={{
-              width: `${2 + Math.random() * 8}px`,
-              height: `${2 + Math.random() * 8}px`,
-              background: `rgba(37, 99, 235, ${0.05 + Math.random() * 0.15})`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 10}s`,
-              animationDuration: `${20 + Math.random() * 20}s`,
-              transform: `translateZ(${Math.random() * 100}px)`,
-            }}
-          ></div>
-        ))}
+        {/* Scroll indicator */}
+        <motion.div
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+        >
+          <div className="w-6 h-10 border-2 border-primary/30 rounded-full flex justify-center">
+            <div className="w-1 h-3 bg-primary/50 rounded-full mt-2" />
+          </div>
+        </motion.div>
       </div>
     </section>
   )

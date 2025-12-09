@@ -1,253 +1,280 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
+import { Menu, X, Phone, ChevronDown, Fish, User, FileText, Shield, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { LanguageToggle } from "./language-toggle"
-import { useLanguage } from "@/contexts/language-context"
-import { Menu, X, Fish, Waves, User, LogOut } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const { t } = useLanguage()
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
+  const [activeDropdown, setActiveDropdown] = useState(null)
+
+  const navItems = [
+    { label: "Home", href: "#" },
+    {
+      label: "Services",
+      href: "#services",
+      dropdown: [
+        { label: "Aquaculture Training", icon: <FileText className="w-4 h-4" /> },
+        { label: "Government Schemes", icon: <Shield className="w-4 h-4" /> },
+        { label: "Market Access", icon: <TrendingUp className="w-4 h-4" /> },
+        { label: "Technical Support", icon: <User className="w-4 h-4" /> }
+      ]
+    },
+    { label: "Schemes", href: "#schemes" },
+    { label: "Success Stories", href: "#success" },
+    { label: "Resources", href: "#resources" },
+    { label: "About Us", href: "#about" },
+  ]
 
   useEffect(() => {
-    checkAuthStatus()
-  }, [])
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
 
-  const checkAuthStatus = async () => {
-    try {
-      const response = await fetch("/api/auth/check")
-      const data = await response.json()
-      setIsAuthenticated(data.isAuthenticated)
-    } catch (error) {
-      console.error("Failed to check auth status:", error)
-      setIsAuthenticated(false)
-    } finally {
-      setIsLoading(false)
+      if (currentScrollY > 100) {
+        setIsScrolled(true)
+
+        // Hide header when scrolling down, show when scrolling up
+        if (currentScrollY > lastScrollY && currentScrollY > 200) {
+          setIsVisible(false)
+        } else {
+          setIsVisible(true)
+        }
+      } else {
+        setIsScrolled(false)
+        setIsVisible(true)
+      }
+
+      setLastScrollY(currentScrollY)
     }
-  }
 
-  const handleSignOut = async () => {
-    try {
-      // Call API to clear the cookie
-      await fetch("/api/auth/signout", { method: "POST" })
-      setIsAuthenticated(false)
-      window.location.href = "/"
-    } catch (error) {
-      console.error("Sign out error:", error)
-    }
-  }
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [lastScrollY])
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
+  const handleContactClick = () => {
+    window.open('tel:+919876543210', '_self')
+  }
 
   return (
-    <header className="relative bg-gradient-to-r from-blue-900 via-blue-800 to-teal-900 text-white shadow-lg sticky top-0 z-50">
-      {/* Simplified Background Elements */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-1/4 w-24 h-24 bg-white rounded-full animate-pulse"></div>
-        <Waves className="absolute top-2 right-8 w-12 h-12" />
-      </div>
+    <>
+      <motion.header
+        initial={{ y: 0 }}
+        animate={{
+          y: isVisible ? 0 : -100,
+          backdropFilter: isScrolled ? "blur(12px)" : "blur(0px)"
+        }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
+            ? "bg-white/90 dark:bg-gray-900/90 shadow-lg border-b border-gray-200 dark:border-gray-800"
+            : "bg-white/80 dark:bg-gray-900/80 border-b border-transparent"
+          }`}
+      >
+        {/* Top Bar */}
 
-      <div className="relative z-10 container mx-auto px-4">
-        <div className="flex items-center justify-between h-14 sm:h-16">
-          {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center space-x-2 transition-transform duration-200 hover:scale-105"
-          >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-400 to-teal-400 rounded-full flex items-center justify-center shadow-md">
-              <Fish className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg sm:text-xl font-bold text-white">
-                <span className="hidden sm:inline">Fisheries Solution</span>
-                <span className="sm:hidden">Fisheries</span>
-              </h1>
-              <p className="text-xs text-blue-200 -mt-1 hidden sm:block">Business Solutions</p>
-            </div>
-          </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-4">
-            <Link
-              href="/"
-              className="px-3 py-2 text-sm font-medium text-blue-100 hover:text-white transition-colors duration-200 hover:bg-blue-800/30 rounded-md"
+        {/* Main Navigation */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16 lg:h-20">
+            {/* Logo */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex items-center gap-3"
             >
-              {t("home")}
-            </Link>
-            <Link
-              href="/explore"
-              className="px-3 py-2 text-sm font-medium text-blue-100 hover:text-white transition-colors duration-200 hover:bg-blue-800/30 rounded-md"
-            >
-              {t("exploreSchemes")}
-            </Link>
-            <Link
-              href="/about"
-              className="px-3 py-2 text-sm font-medium text-blue-100 hover:text-white transition-colors duration-200 hover:bg-blue-800/30 rounded-md"
-            >
-              {t("aboutUs")}
-            </Link>
-            <Link
-              href="/contact"
-              className="px-3 py-2 text-sm font-medium text-blue-100 hover:text-white transition-colors duration-200 hover:bg-blue-800/30 rounded-md"
-            >
-              {t("contact")}
-            </Link>
-          </nav>
+              <div className="relative">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-md">
+                  <Fish className="w-5 h-5 text-white" />
+                </div>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                  className="absolute -inset-1 border-2 border-primary/20 rounded-xl"
+                />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  Fisheries
+                </h1>
+                <p className="text-xs text-muted-foreground hidden sm:block">
+                  Government Certified Aquaculture
+                </p>
+              </div>
+            </motion.div>
 
-          {/* Right side buttons */}
-          <div className="hidden lg:flex items-center space-x-3">
-
-            {isLoading ? (
-              // Loading state
-              <div className="w-20 h-9 bg-blue-800/50 rounded-md animate-pulse"></div>
-            ) : isAuthenticated ? (
-              // Authenticated state
-              <div className="flex items-center space-x-3">
-                <Link href="/dashboard">
-                  <Button
-                    size="sm"
-                    className="bg-gradient-to-r from-teal-500 to-blue-600 text-white border-0 hover:from-teal-600 hover:to-blue-700 transition-colors duration-200"
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center gap-1">
+              {navItems.map((item) => (
+                <div
+                  key={item.label}
+                  className="relative"
+                  onMouseEnter={() => item.dropdown && setActiveDropdown(item.label)}
+                  onMouseLeave={() => setActiveDropdown(null)}
+                >
+                  <a
+                    href={item.href}
+                    className="px-4 py-2 text-sm font-medium text-foreground/80 hover:text-primary transition-colors flex items-center gap-1 group"
                   >
-                    <User className="w-4 h-4 mr-2" />
-                    Dashboard
-                  </Button>
-                </Link>
+                    {item.label}
+                    {item.dropdown && (
+                      <ChevronDown className="w-3 h-3 group-hover:rotate-180 transition-transform duration-200" />
+                    )}
+                  </a>
+
+                  {/* Dropdown Menu */}
+                  {item.dropdown && activeDropdown === item.label && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800 p-2"
+                    >
+                      {item.dropdown.map((dropdownItem) => (
+                        <a
+                          key={dropdownItem.label}
+                          href="#"
+                          className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group"
+                        >
+                          <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                            {dropdownItem.icon}
+                          </div>
+                          <span className="text-sm font-medium text-foreground group-hover:text-primary">
+                            {dropdownItem.label}
+                          </span>
+                        </a>
+                      ))}
+                    </motion.div>
+                  )}
+                </div>
+              ))}
+
+              <div className="flex items-center gap-3 ml-4 pl-4 border-l border-gray-200 dark:border-gray-800">
                 <Button
                   variant="outline"
-                  size="sm"
-                  onClick={handleSignOut}
-                  className="bg-transparent border-blue-300 text-blue-100 hover:bg-blue-800/50 hover:text-white transition-colors duration-200"
+                  className="rounded-full border-primary/30 hover:border-primary hover:bg-primary/5"
+                  onClick={() => window.location.href = "/signin"}
                 >
-                  <LogOut className="w-4 h-4" />
+                  SignIn As Farmer
                 </Button>
+
+
               </div>
-            ) : (
-              // Not authenticated state
-              <div className="flex items-center space-x-2">
-                <Link href="/signin">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-transparent border-blue-300 text-blue-100 hover:bg-blue-800/50 hover:text-white transition-colors duration-200"
-                  >
-                    {t("signIn as Farmer ")}
-                  </Button>
-                </Link>
-                <Link href="/signup">
-                  <Button
-                    size="sm"
-                    className="bg-gradient-to-r from-teal-500 to-blue-600 text-white border-0 hover:from-teal-600 hover:to-blue-700 transition-colors duration-200"
-                  >
-                    {t("getStarted")}
-                  </Button>
-                </Link>
-              </div>
-            )}
+            </nav>
+
+            {/* Mobile Menu Button */}
+            <motion.button
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </motion.button>
           </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden p-2 rounded-md bg-blue-800/50 hover:bg-blue-700/50 transition-colors duration-200"
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
         </div>
 
-        {/* Mobile Navigation */}
-        <div
-          className={`lg:hidden transition-all duration-300 overflow-hidden ${isMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-            }`}
-        >
-          <nav className="py-3 space-y-1 border-t border-blue-700/50">
-            <Link
-              href="/"
-              className="block px-4 py-2 text-blue-100 hover:text-white hover:bg-blue-800/30 rounded-md transition-colors duration-200"
-              onClick={() => setIsMenuOpen(false)}
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.nav
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="lg:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 overflow-hidden"
             >
-              {t("home")}
-            </Link>
-            <Link
-              href="/explore"
-              className="block px-4 py-2 text-blue-100 hover:text-white hover:bg-blue-800/30 rounded-md transition-colors duration-200"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              {t("exploreSchemes")}
-            </Link>
-            <Link
-              href="/about"
-              className="block px-4 py-2 text-blue-100 hover:text-white hover:bg-blue-800/30 rounded-md transition-colors duration-200"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              {t("aboutUs")}
-            </Link>
-            <Link
-              href="/contact"
-              className="block px-4 py-2 text-blue-100 hover:text-white hover:bg-blue-800/30 rounded-md transition-colors duration-200"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              {t("contact")}
-            </Link>
+              <div className="px-4 py-6 space-y-1">
+                {navItems.map((item) => (
+                  <div key={item.label}>
+                    <a
+                      href={item.href}
+                      className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                      onClick={() => item.dropdown && setActiveDropdown(
+                        activeDropdown === item.label ? null : item.label
+                      )}
+                    >
+                      {item.label}
+                      {item.dropdown && (
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === item.label ? "rotate-180" : ""
+                          }`} />
+                      )}
+                    </a>
 
-            <div className="pt-3 px-4 space-y-2 border-t border-blue-700/50 mt-2">
-              <div className="flex justify-center py-2">
-                <LanguageToggle />
-              </div>
+                    {item.dropdown && activeDropdown === item.label && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="pl-8 space-y-1"
+                      >
+                        {item.dropdown.map((dropdownItem) => (
+                          <a
+                            key={dropdownItem.label}
+                            href="#"
+                            className="flex items-center gap-3 px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                          >
+                            {dropdownItem.icon}
+                            {dropdownItem.label}
+                          </a>
+                        ))}
+                      </motion.div>
+                    )}
+                  </div>
+                ))}
 
-              {isLoading ? (
-                // Loading state
-                <div className="space-y-2">
-                  <div className="w-full h-10 bg-blue-800/50 rounded-md animate-pulse"></div>
-                  <div className="w-full h-10 bg-blue-800/50 rounded-md animate-pulse"></div>
-                </div>
-              ) : isAuthenticated ? (
-                // Authenticated state
-                <div className="space-y-2">
-                  <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
-                    <Button className="w-full bg-gradient-to-r from-teal-500 to-blue-600 text-white border-0 hover:from-teal-600 hover:to-blue-700 transition-colors duration-200">
-                      <User className="w-4 h-4 mr-2" />
-                      Dashboard
-                    </Button>
-                  </Link>
+                <div className="pt-4 space-y-3">
                   <Button
                     variant="outline"
-                    onClick={() => {
-                      handleSignOut()
-                      setIsMenuOpen(false)
-                    }}
-                    className="w-full bg-transparent border-blue-300 text-blue-100 hover:bg-blue-800/50 hover:text-white transition-colors duration-200"
+                    className="w-full justify-center rounded-full border-primary/30"
                   >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
+                    Login
+                  </Button>
+                  <Button className="w-full justify-center bg-gradient-to-r from-primary to-secondary text-white rounded-full shadow-lg">
+                    Get Started
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-center text-primary"
+                    onClick={handleContactClick}
+                  >
+                    <Phone className="w-4 h-4 mr-2" />
+                    Call Now: +91 98765 43210
                   </Button>
                 </div>
-              ) : (
-                // Not authenticated state
-                <div className="space-y-2">
-                  <Link href="/signin" onClick={() => setIsMenuOpen(false)}>
-                    <Button
-                      variant="outline"
-                      className="w-full bg-transparent border-blue-300 text-blue-100 hover:bg-blue-800/50 hover:text-white transition-colors duration-200"
-                    >
-                      {t("signIn")}
-                    </Button>
-                  </Link>
-                  <Link href="/signup" onClick={() => setIsMenuOpen(false)}>
-                    <Button className="w-full bg-gradient-to-r from-teal-500 to-blue-600 text-white border-0 hover:from-teal-600 hover:to-blue-700 transition-colors duration-200">
-                      {t("getStarted")}
-                    </Button>
-                  </Link>
-                </div>
-              )}
+              </div>
+            </motion.nav>
+          )}
+        </AnimatePresence>
+
+        {/* Progress Indicator */}
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: isScrolled ? (window.scrollY / (document.body.scrollHeight - window.innerHeight)) : 0 }}
+          className="h-0.5 bg-gradient-to-r from-primary to-secondary origin-left"
+        />
+      </motion.header>
+
+      {/* Scroll to top indicator */}
+      <AnimatePresence>
+        {isScrolled && isVisible && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-40"
+          >
+            <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 rounded-full shadow-lg border border-gray-200 dark:border-gray-800">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-xs font-medium text-foreground">Scroll for more</span>
             </div>
-          </nav>
-        </div>
-      </div>
-    </header>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   )
 }
