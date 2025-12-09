@@ -15,7 +15,7 @@ const schemes = [
     status: "live",
     applicants: 1250,
      bgColor: "bg-green-50",
-    pdf: "https://sugam.odisha.gov.in/admin/getnfsfileWS/eyJpdiI6InkydXpGVDJVaVRkdGdNNjRyQlBRWGc9PSIsInZhbHVlIjoiQkd3dGFNZXU1cityTEZBRUFZNFwvOUxjUzJocmk2Z282MG5pclFHSm5IeXhsKzdPWWdwK3NOc2FmUXNsZ3Rvcnp0bXZUTFlnV1Nab0dWTkFQaHVZdjVhXC9YWENUTDh4XC9pUXNJQUdBWWMyMU09IiwibWFjIjoiNmMwMmYyNThhYWI1NjJlZTJlMGM2M2YxN2RiMGUwZjk2N2UyMjAzOTNjYmNlZDFjYTYxMGM1MWY2NjliZDgxYSJ9",
+    pdf: "https://sugam.odisha.gov.in/admin/getnfsfileWS/eyJpdiI6InkydXpGVDJVaVRkdGdNNjRyQlBRWGc9PSIsInZhbHVlIjoiQkd3dGFNZXU1cityTEZBRUFZNFwvOUxjUzJocmk2Z282MG5pclFHSm5IeXhsKzdPWWdwK3NOc2FmUXNsZ3Rvcnp0bXZUTFlnV1Nab0dWTkFQaHVZdjVhXC9YWENUTDh4XC9pUXNJQUdBWWMyMU09IiwibWFjIjoiNmMwMmYyNThhYWI1NjJlZTJlMGM2M2YxN2RiMGUwZjk2N2UyMjAzOTNjYmNlZDFjYTYxMGM1MWY2NjliZDgxYSJ9", // 🔹 Local/public folder file
   },
   {
     id: 2,

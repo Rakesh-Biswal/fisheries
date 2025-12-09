@@ -14,8 +14,7 @@ const schemes = [
     deadline: "2024-12-31",
     status: "live",
     applicants: 1250,
-     bgColor: "bg-green-50",
-    pdf: "https://sugam.odisha.gov.in/admin/getnfsfileWS/eyJpdiI6InkydXpGVDJVaVRkdGdNNjRyQlBRWGc9PSIsInZhbHVlIjoiQkd3dGFNZXU1cityTEZBRUFZNFwvOUxjUzJocmk2Z282MG5pclFHSm5IeXhsKzdPWWdwK3NOc2FmUXNsZ3Rvcnp0bXZUTFlnV1Nab0dWTkFQaHVZdjVhXC9YWENUTDh4XC9pUXNJQUdBWWMyMU09IiwibWFjIjoiNmMwMmYyNThhYWI1NjJlZTJlMGM2M2YxN2RiMGUwZjk2N2UyMjAzOTNjYmNlZDFjYTYxMGM1MWY2NjliZDgxYSJ9",
+    backgroundImage: "/modern-fish-farming-pond-with-healthy-fish-swimmin.png",
   },
   {
     id: 2,
@@ -26,8 +25,7 @@ const schemes = [
     deadline: "2024-11-15",
     status: "expiring",
     applicants: 890,
-     bgColor: "bg-green-50",
-    pdf: "https://sugam.odisha.gov.in/admin/getnfsfileWS/eyJpdiI6IkY2WUE2Y1JWVWhWTm5hMWpZWWtmZ2c9PSIsInZhbHVlIjoieFZMWkZFK1hpY3pcLzlVUXE4K0tTMmorRXV6MUNlNVZ0ajZqdmppTnRHTmFkYlIxNUJyQWpkZmF0bkp3bzgwTmJHcEpsRVwvWGxjWmJ3Z1VIOUkwcVphZz09IiwibWFjIjoiNjZiNmRhOWM0MjRhNzdlYTY0MGMzOTYwMzVhMjRmZmNkNzY2MDAxODg2YmNiNWFkYzMzNDJlODYzZDdhMDdkYyJ9", 
+    backgroundImage: "/fisheries-infrastructure-equipment--fish-processin.png",
   },
   {
     id: 3,
@@ -38,8 +36,7 @@ const schemes = [
     deadline: "2024-10-30",
     status: "expired",
     applicants: 650,
-     bgColor: "bg-green-50",
-    pdf: "https://sugam.odisha.gov.in/admin/getnfsfileWS/eyJpdiI6IkY2WUE2Y1JWVWhWTm5hMWpZWWtmZ2c9PSIsInZhbHVlIjoieFZMWkZFK1hpY3pcLzlVUXE4K0tTMmorRXV6MUNlNVZ0ajZqdmppTnRHTmFkYlIxNUJyQWpkZmF0bkp3bzgwTmJHcEpsRVwvWGxjWmJ3Z1VIOUkwcVphZz09IiwibWFjIjoiNjZiNmRhOWM0MjRhNzdlYTY0MGMzOTYwMzVhMjRmZmNkNzY2MDAxODg2YmNiNWFkYzMzNDJlODYzZDdhMDdkYyJ9",
+    backgroundImage: "/integrated-fisheries-value-chain--fish-market--sea.png",
   },
 ]
 
@@ -92,11 +89,10 @@ export function SchemeOverview() {
           {schemes.map((scheme) => (
             <Card
               key={scheme.id}
-              className="relative border rounded-xl shadow-md bg-white overflow-hidden 
-                         transition-all duration-500 hover:shadow-xl hover:border-blue-300 hover:bg-blue-50/20"
+              className="relative border rounded-xl shadow-md hover:shadow-lg transition-all bg-white overflow-hidden"
             >
-              {/* Background image */}
-              <div className="absolute inset-0 opacity-10 transition-all duration-500 group-hover:opacity-20">
+              {/* Background image soft */}
+              <div className="absolute inset-0 opacity-10">
                 <img
                   src={scheme.backgroundImage}
                   alt=""
@@ -109,19 +105,19 @@ export function SchemeOverview() {
                   <div className="flex items-start justify-between mb-2">
                     <Badge
                       variant="outline"
-                      className={`${getStatusColor(scheme.status)} flex items-center gap-1 px-2.5 py-1 rounded-md text-sm transition-all duration-500 group-hover:scale-105`}
+                      className={`${getStatusColor(scheme.status)} flex items-center gap-1 px-2.5 py-1 rounded-md text-sm`}
                     >
                       {getStatusIcon(scheme.status)}
                       {scheme.status.charAt(0).toUpperCase() + scheme.status.slice(1)}
                     </Badge>
-                    <div className="text-right transition-all duration-500 group-hover:scale-105">
+                    <div className="text-right">
                       <div className="text-xl font-semibold text-blue-700">
                         {scheme.amount}
                       </div>
                       <div className="text-xs text-gray-500">Max Subsidy</div>
                     </div>
                   </div>
-                  <CardTitle className="text-lg font-semibold text-gray-900 transition-colors duration-500 group-hover:text-blue-700">
+                  <CardTitle className="text-lg font-semibold text-gray-900">
                     {scheme.title}
                   </CardTitle>
                   <p className="text-sm text-gray-600 italic">{scheme.titleOdia}</p>
@@ -130,13 +126,13 @@ export function SchemeOverview() {
                 <CardContent>
                   <p className="text-sm text-gray-700 mb-4">{scheme.description}</p>
                   <div className="space-y-2 text-sm">
-                    <div className="flex justify-between p-2 rounded bg-gray-50 transition-colors duration-500 group-hover:bg-blue-50/50">
+                    <div className="flex justify-between p-2 rounded bg-gray-50">
                       <span className="text-gray-600">Deadline:</span>
                       <span className="font-medium text-gray-900">
                         {new Date(scheme.deadline).toLocaleDateString()}
                       </span>
                     </div>
-                    <div className="flex justify-between p-2 rounded bg-gray-50 transition-colors duration-500 group-hover:bg-blue-50/50">
+                    <div className="flex justify-between p-2 rounded bg-gray-50">
                       <span className="text-gray-600">Applicants:</span>
                       <span className="font-medium text-gray-900">
                         {scheme.applicants.toLocaleString()}
@@ -145,25 +141,16 @@ export function SchemeOverview() {
                   </div>
 
                   <div className="flex gap-3 mt-6">
-                    {/* PDF Link */}
-                    <a
-                      href={scheme.pdf}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1"
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 border-gray-300 text-gray-700 hover:border-blue-600 hover:text-blue-700"
                     >
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full border-gray-300 text-gray-700 hover:border-blue-600 hover:text-blue-700 transition-all duration-500 hover:shadow-md"
-                      >
-                        View Details
-                      </Button>
-                    </a>
-                    
+                      View Details
+                    </Button>
                     <Button
                       size="sm"
-                      className="flex-1 bg-blue-600 text-white hover:bg-blue-700 transition-all duration-500 hover:shadow-md"
+                      className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
                       disabled={scheme.status === "expired"}
                     >
                       {scheme.status === "expired" ? "Expired" : "Apply Now"}

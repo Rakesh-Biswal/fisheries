@@ -14,8 +14,8 @@ const schemes = [
     deadline: "2024-12-31",
     status: "live",
     applicants: 1250,
-     bgColor: "bg-green-50",
-    pdf: "https://sugam.odisha.gov.in/admin/getnfsfileWS/eyJpdiI6InkydXpGVDJVaVRkdGdNNjRyQlBRWGc9PSIsInZhbHVlIjoiQkd3dGFNZXU1cityTEZBRUFZNFwvOUxjUzJocmk2Z282MG5pclFHSm5IeXhsKzdPWWdwK3NOc2FmUXNsZ3Rvcnp0bXZUTFlnV1Nab0dWTkFQaHVZdjVhXC9YWENUTDh4XC9pUXNJQUdBWWMyMU09IiwibWFjIjoiNmMwMmYyNThhYWI1NjJlZTJlMGM2M2YxN2RiMGUwZjk2N2UyMjAzOTNjYmNlZDFjYTYxMGM1MWY2NjliZDgxYSJ9",
+    backgroundcolor: "green",
+    pdf: "/pdfs/pmmsy.pdf", // 🔹 Local/public folder file
   },
   {
     id: 2,
@@ -26,8 +26,8 @@ const schemes = [
     deadline: "2024-11-15",
     status: "expiring",
     applicants: 890,
-     bgColor: "bg-green-50",
-    pdf: "https://sugam.odisha.gov.in/admin/getnfsfileWS/eyJpdiI6IkY2WUE2Y1JWVWhWTm5hMWpZWWtmZ2c9PSIsInZhbHVlIjoieFZMWkZFK1hpY3pcLzlVUXE4K0tTMmorRXV6MUNlNVZ0ajZqdmppTnRHTmFkYlIxNUJyQWpkZmF0bkp3bzgwTmJHcEpsRVwvWGxjWmJ3Z1VIOUkwcVphZz09IiwibWFjIjoiNjZiNmRhOWM0MjRhNzdlYTY0MGMzOTYwMzVhMjRmZmNkNzY2MDAxODg2YmNiNWFkYzMzNDJlODYzZDdhMDdkYyJ9", 
+    backgroundImage: "/fisheries-infrastructure-equipment--fish-processin.png",
+    pdf: "https://example.com/fish-farmer-scheme.pdf", // 🔹 External PDF link
   },
   {
     id: 3,
@@ -38,8 +38,8 @@ const schemes = [
     deadline: "2024-10-30",
     status: "expired",
     applicants: 650,
-     bgColor: "bg-green-50",
-    pdf: "https://sugam.odisha.gov.in/admin/getnfsfileWS/eyJpdiI6IkY2WUE2Y1JWVWhWTm5hMWpZWWtmZ2c9PSIsInZhbHVlIjoieFZMWkZFK1hpY3pcLzlVUXE4K0tTMmorRXV6MUNlNVZ0ajZqdmppTnRHTmFkYlIxNUJyQWpkZmF0bkp3bzgwTmJHcEpsRVwvWGxjWmJ3Z1VIOUkwcVphZz09IiwibWFjIjoiNjZiNmRhOWM0MjRhNzdlYTY0MGMzOTYwMzVhMjRmZmNkNzY2MDAxODg2YmNiNWFkYzMzNDJlODYzZDdhMDdkYyJ9",
+    backgroundImage: "/integrated-fisheries-value-chain--fish-market--sea.png",
+    pdf: "/pdfs/ifds.pdf",
   },
 ]
 
